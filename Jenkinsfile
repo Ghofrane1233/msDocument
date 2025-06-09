@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Cloner le dépôt Git') {
             steps {
-                git credentialsId: "${GIT_CREDENTIALS_ID}", url: 'https://github.com/Ghofrane1233/msclient.git', branch: 'main'
+                git credentialsId: "${GIT_CREDENTIALS_ID}", url: 'https://github.com/Ghofrane1233/msDocument.git', branch: 'main'
             }
         }
 
@@ -48,7 +48,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        withKubeConfig([credentialsId: 'kubeconfig', serverUrl: 'https://127.0.0.1:54825']) {
+                        withKubeConfig([credentialsId: 'kubeconfig', serverUrl: 'https://172.27.157.229:8443']) {
                             bat 'kubectl apply -f db-secret.yaml --validate=false'
                             bat 'kubectl apply -f k8s/deployment.yaml --validate=false'
                             bat 'kubectl apply -f k8s/service.yaml --validate=false'
@@ -63,7 +63,7 @@ pipeline {
 stage('Deploy Monitoring Stack') {
     steps {
         script {
-            withKubeConfig([credentialsId: 'kubeconfig', serverUrl: 'https://127.0.0.1:54825']) {
+            withKubeConfig([credentialsId: 'kubeconfig', serverUrl: 'https://172.27.157.229:8443']) {
                 // Déployer Prometheus
                 bat 'kubectl apply -f monitoring/prometheus-config.yaml'
                 bat 'kubectl apply -f monitoring/prometheus-deployment.yaml'
