@@ -1,75 +1,68 @@
+
 pipeline {
     agent any
 
-    triggers {
-        // Lancer la pipeline toutes les 5 minutes
-        cron('H/5 * * * *')
-    }
-
     environment {
-        DOCKER_IMAGE = "ghofrane694/msdocument"
+        DOCKER_IMAGE = "ghofrane694/msdocument:latest"
         REGISTRY_CREDENTIALS_ID = 'docker-hub-credentials-id'
         GIT_CREDENTIALS_ID = 'git-credentials-id'
     }
 
     stages {
-        stage('Cloner le dépôt Git') {
+
+        stage(' Cloner le dépôt Git') {
             steps {
-                git credentialsId: "${GIT_CREDENTIALS_ID}", url: 'https://github.com/Ghofrane1233/msDocument.git', branch: 'main'
+                git credentialsId: "${GIT_CREDENTIALS_ID}", url: 'https://github.com/Ghofrane1233/api_gateway.git', branch: 'main'
             }
         }
 
-        stage('Installation des dépendances') {
+        stage(' Installer les dépendances') {
             steps {
-                bat 'npm install' // Utiliser sh si l'agent est sous Linux
+                bat 'npm install'
             }
         }
 
-     
 
-        stage('Build Docker Image') {
+
+        stage('Build de l\'image Docker') {
             steps {
                 script {
-                    env.BUILT_IMAGE_ID = docker.build(env.DOCKER_IMAGE).id
+                    env.BUILT_IMAGE_ID = docker.build("${DOCKER_IMAGE}").id
                 }
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage(' Push vers Docker Hub') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', env.REGISTRY_CREDENTIALS_ID) {
-                        docker.image(env.DOCKER_IMAGE).push("latest")
+                    docker.withRegistry('https://index.docker.io/v1/', "${REGISTRY_CREDENTIALS_ID}") {
+                        docker.image("${DOCKER_IMAGE}").push("latest")
                     }
                 }
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage(' Déploiement sur Kubernetes') {
             steps {
                 script {
-                    try {
-                        withKubeConfig([credentialsId: 'kubeconfig', serverUrl: 'https://127.0.0.1:54825']) {
-                            bat 'kubectl apply -f db-secret.yaml --validate=false'
-                            bat 'kubectl apply -f k8s/deployment.yaml --validate=false'
-                            bat 'kubectl apply -f k8s/service.yaml --validate=false'
-                        }
-                    } catch (Exception e) {
-                        error "Kubernetes deployment failed: ${e.getMessage()}"
+                    withKubeConfig([credentialsId: 'kubeconfig', serverUrl: 'https://127.0.0.1:62537']) {
+                        bat 'kubectl apply -f db-secret.yaml --validate=false'
+                        bat 'kubectl apply -f k8s/deployment.yaml --validate=false'
+                        bat 'kubectl apply -f k8s/service.yaml --validate=false'
                     }
                 }
             }
         }
 
-       
+   
     }
 
     post {
         success {
-            echo "✅ Déploiement terminé avec succès sur Minikube."
+            echo " Déploiement terminé avec succès sur Minikube."
         }
         failure {
-            echo "❌ La pipeline a échoué. Vérifiez les logs pour plus de détails."
+            echo " La pipeline a échoué. Vérifiez les logs pour plus de détails."
         }
     }
 }
