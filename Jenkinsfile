@@ -12,7 +12,7 @@ pipeline {
 
         stage(' Cloner le dépôt Git') {
             steps {
-                git credentialsId: "${GIT_CREDENTIALS_ID}", url: 'https://github.com/Ghofrane1233/api_gateway.git', branch: 'main'
+                git credentialsId: "${GIT_CREDENTIALS_ID}", url: 'https://github.com/Ghofrane1233/msDocument.git', branch: 'main'
             }
         }
 
