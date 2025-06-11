@@ -1,8 +1,13 @@
 pipeline {
     agent any
 
+    triggers {
+        // Lancer la pipeline toutes les 5 minutes
+        cron('H/5 * * * *')
+    }
+
     environment {
-        DOCKER_IMAGE = "ghofrane694/msDocument"
+        DOCKER_IMAGE = "ghofrane694/msdocument"
         REGISTRY_CREDENTIALS_ID = 'docker-hub-credentials-id'
         GIT_CREDENTIALS_ID = 'git-credentials-id'
     }
@@ -10,7 +15,7 @@ pipeline {
     stages {
         stage('Cloner le dépôt Git') {
             steps {
-                git credentialsId: "${GIT_CREDENTIALS_ID}", url: 'https://github.com/Ghofrane1233/msclient.git', branch: 'main'
+                git credentialsId: "${GIT_CREDENTIALS_ID}", url: 'https://github.com/Ghofrane1233/msDocument.git', branch: 'main'
             }
         }
 
@@ -20,11 +25,7 @@ pipeline {
             }
         }
 
-        stage('Tests') {
-            steps {
-                bat 'npm test' // Utiliser sh si l'agent est sous Linux
-            }
-        }
+     
 
         stage('Build Docker Image') {
             steps {
@@ -59,23 +60,9 @@ pipeline {
                 }
             }
         }
-    }
-stage('Deploy Monitoring Stack') {
-    steps {
-        script {
-            withKubeConfig([credentialsId: 'kubeconfig', serverUrl: 'https://127.0.0.1:54825']) {
-                // Déployer Prometheus
-                bat 'kubectl apply -f monitoring/prometheus-config.yaml'
-                bat 'kubectl apply -f monitoring/prometheus-deployment.yaml'
-                bat 'kubectl apply -f monitoring/prometheus-service.yaml'
 
-                // Déployer Grafana
-                bat 'kubectl apply -f monitoring/grafana-deployment.yaml'
-                bat 'kubectl apply -f monitoring/grafana-service.yaml'
-            }
-        }
+       
     }
-}
 
     post {
         success {

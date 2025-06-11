@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: msDocument
+  name: msdocument
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: msDocument
+      app: msdocument
   template:
     metadata:
       labels:
-        app: msDocument
+        app: msdocument
     spec:
       containers:
-      - name: msDocument
-        image: ghofrane694/msDocument
+      - name: msdocument
+        image: ghofrane694/msdocument
         ports:
         - containerPort: 5004
